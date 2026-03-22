@@ -3,7 +3,11 @@ A fork that extends Visual Subnet Calculator from:
 - https://github.com/ckabalan/visualsubnetcalc/pull/33
 - https://github.com/ckabalan/visualsubnetcalc/pull/40
 
-# Visual Subnet Calculator - [visualsubnetcalc.com](https://visualsubnetcalc.com)
+Available at:
+- https://sharevb.github.io/visualsubnetcalc/
+- https://hub.docker.com/r/sharevb/visualsubnetcalc 
+
+# Visual Subnet Calculator - [https://sharevb.github.io/visualsubnetcalc/](https://sharevb.github.io/visualsubnetcalc/)
 
 ![demo.gif](src%2Fdemo.gif)
 
