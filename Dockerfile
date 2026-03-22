@@ -1,10 +1,10 @@
-FROM node:20-alpine as build
+FROM --platform=$BUILDPLATFORM node:lts-alpine AS build
 
 ARG REACT_APP_SERVICES_HOST=/services/m
 
 # Set working directory and copy only package files for better cache utilization
-WORKDIR /app/src
-COPY src/package*.json /app/src/
+WORKDIR /app
+COPY package*.json /app
 
 # Install dependencies
 RUN npm install
