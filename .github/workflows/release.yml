@@ -1,0 +1,48 @@
+name: Release New Version
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  # test:
+  #   name: Test
+  #   uses: ./.github/workflows/test-branch.yml
+  release:
+    # needs: test
+    name: Deploy to GitHub Pages
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: CI
+        run: npm ci
+
+      - name: Build App
+        run: npm run build --if-present
+
+      - name: Get release version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Zip the app
+        run: zip -r it-tools-${{ env.RELEASE_VERSION }}.zip dist/*
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: visualsubnetcalc-${{ env.RELEASE_VERSION }}.zip
+          tag_name: v${{ env.RELEASE_VERSION }}
+          draft: false
+          prerelease: false
+          body: |
+            ## Docker images
+
+            - Docker Hub Registry
+              - `sharevb/visualsubnetcalc:latest`
+              - `sharevb/visualsubnetcalc:${{ env.RELEASE_VERSION}}`
