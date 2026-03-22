@@ -73,6 +73,15 @@ should align to these tenets, or propose an adjustment to the tenets.
   - Azure Reserved - DNS Mapping
   - Broadcast Address (last network address)
 
+### GCP mode ([docs](https://cloud.google.com/vpc/docs/subnets#unusable-ip-addresses-in-every-subnet)):
+
+- Smallest subnet: /29
+- Four reserved addresses per subnet:
+  - Network Address (network + 0)
+  - GCP Reserved - Default Gateway (network + 1)
+  - GCP Reserved - Future Use (second-to-last address)
+  - Broadcast Address (last network address)
+
 ### OCI mode ([docs](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/overview.htm#Reserved__reserved_subnet)):
 
 - Smallest subnet: /30
