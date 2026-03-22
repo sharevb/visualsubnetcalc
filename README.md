@@ -1,3 +1,8 @@
+A fork that extends Visual Subnet Calculator from:
+- https://github.com/nickromney/visualsubnetcalc
+- https://github.com/ckabalan/visualsubnetcalc/pull/33
+- https://github.com/ckabalan/visualsubnetcalc/pull/40
+
 # Visual Subnet Calculator - [visualsubnetcalc.com](https://visualsubnetcalc.com)
 
 ![demo.gif](src%2Fdemo.gif)
@@ -90,19 +95,17 @@ Compile from source:
 
 ```shell
 # Clone the repository
-> git clone https://github.com/ckabalan/visualsubnetcalc
+git clone https://github.com/sharevb/visualsubnetcalc
 # Change to the repository directory
-> cd visualsubnetcalc
+cd visualsubnetcalc
 # Use recommended NVM version
-> nvm use
-# Change to the sources directory
-> cd src
+nvm use
 # Install Bootstrap
-> npm install
+npm install
 # Compile Bootstrap (Also install sass command line globally)
-> npm run build
+npm run build
 # Run the local webserver
-> npm start
+npm start
 ```
 
 The full application should then be available within `./dist/`, open `./dist/index.html` in a browser.
@@ -112,37 +115,34 @@ The full application should then be available within `./dist/`, open `./dist/ind
 **_NB:_** _required for testing clipboard.writeText() in the browser. Feature is only available in secure (https) mode._
 
 ```shell
-
 #Install mkcert
-> brew install mkcert
+brew install mkcert
 # generate CA Certs to be trusted by local browsers
-> mkcert install
+mkcert install
 # generate certs for local development
-> cd visualsubnetcalc/src
+cd visualsubnetcalc
 # generate certs for local development
-> npm run setup:certs
+npm run setup:certs
 # run the local webserver with https
-> npm run local-secure-start
+npm run local-secure-start
 ```
 
 ## Running in a container
 
-The application is also available as a container from https://hub.docker.com/r/ckabalan/visualsubnetcalc.
-The container is built automatically and pushed to dockerhub on pushes to the develop branch and when when a new git tag is created.
+The application is also available as a container from https://hub.docker.com/r/sharevb/visualsubnetcalc.
+The container is built automatically and pushed to dockerhub on pushes to the main branch and when when a new git tag is created.
 
 ### Available Image Tags
 
 | Image Tag | Description                                                                                           |
 | --------- | ----------------------------------------------------------------------------------------------------- |
-| develop   | Images built from the develop branch                                                                  |
 | latest    | The latest container image that points to the most recent semantic version built from the main branch |
-| v1.1.7    | Semantic version generated from git tag from the main branch                                          |
 
 ### Running locally
 
 ```bash
 # Unprivilged container exposes port 8080 and runs as a non root user.
-docker run -d -p8080:8080 --name visualsubnetcalc ckabalan/visualsubnetcalc:latest
+docker run -d -p8080:8080 --name visualsubnetcalc sharevb/visualsubnetcalc:latest
 ```
 
 ## Credits
