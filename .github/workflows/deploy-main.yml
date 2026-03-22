@@ -10,12 +10,12 @@ permissions:
       contents: read
 
 jobs:
-  test:
-    name: Test
-    uses: ./.github/workflows/test-branch.yml
-  deploy:
-    needs: test
-    name: Deploy to AWS
+  # test:
+  #   name: Test
+  #   uses: ./.github/workflows/test-branch.yml
+  build:
+    # needs: test
+    name: Deploy to GitHub Pages
     timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
@@ -23,40 +23,46 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
-    - run: |
-        export MKCERT_VERSION=v1.4.4
-        export PLATFORM=linux
-        curl -L "https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-$PLATFORM-amd64" -o mkcert
-        chmod +x mkcert
-        echo "$PWD/mkcert" >> $GITHUB_PATH
-        mkdir -p src/certs
-        ./mkcert -cert-file src/certs/cert.pem -key-file src/certs/cert.key localhost 127.0.0.1
+    # - run: |
+    #     export MKCERT_VERSION=v1.4.4
+    #     export PLATFORM=linux
+    #     curl -L "https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-$PLATFORM-amd64" -o mkcert
+    #     chmod +x mkcert
+    #     echo "$PWD/mkcert" >> $GITHUB_PATH
+    #     mkdir -p src/certs
+    #     ./mkcert -cert-file src/certs/cert.pem -key-file src/certs/cert.key localhost 127.0.0.1
     - run: npm ci
-      working-directory: ./src
+      # working-directory: ./src
     - run: npm run build --if-present
-      working-directory: ./src
+      # working-directory: ./src
     - name: Replace Deployment URL
       run: |
         sed -i "s|__DEPLOY_URL__|${{ vars.DEPLOY_URL }}|g" dist/index.html
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
+
+    - name: Upload static files as artifact
+      id: deployment
+      uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
       with:
-        aws-region: ${{ vars.AWS_DEPLOY_REGION }}
-        role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-    - name: Deploy to S3
-      run: |
-        aws sts get-caller-identity
-        aws s3 sync ./dist s3://${{ vars.AWS_DEPLOY_S3_BUCKET_NAME }} --delete
-    - name: Invalidate CloudFront
-      run: |
-        echo "Creating CloudFront invalidation..."
-        INVALIDATION_ID=$(aws cloudfront create-invalidation \
-          --distribution-id ${{ vars.AWS_DEPLOY_CLOUDFRONT_DISTRIBUTION_ID }} \
-          --paths "/*" \
-          --query 'Invalidation.Id' --output text)
-        echo "Created invalidation with ID: $INVALIDATION_ID"
-        echo "Waiting for CloudFront invalidation to complete..."
-        aws cloudfront wait invalidation-completed \
-          --distribution-id ${{ vars.AWS_DEPLOY_CLOUDFRONT_DISTRIBUTION_ID }} \
-          --id $INVALIDATION_ID
-        echo "CloudFront invalidation completed."
+        path: dist/
+
+  # Deploy job
+  deploy:
+    # Add a dependency to the build job
+    needs: build
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    # Specify runner + deployment step
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # or specific "vX.X.X" version tag for this action
