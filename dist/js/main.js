@@ -248,9 +248,15 @@ $('#calcbody').on('focusout', 'td.note input', function(event) {
 
 function renderTable(operatingMode) {
     // TODO: Validation Code
+    $('#calcbody [data-bs-toggle="tooltip"]').each(function() {
+        bootstrap.Tooltip.getInstance(this)?.dispose()
+    });
     $('#calcbody').empty();
     let maxDepth = get_dict_max_depth(subnetMap, 0)
     addRowTree(subnetMap, 0, maxDepth, operatingMode)
+    $('#calcbody [data-bs-toggle="tooltip"]').each(function() {
+        new bootstrap.Tooltip(this)
+    });
 }
 
 function addRowTree(subnetTree, depth, maxDepth, operatingMode) {
@@ -298,7 +304,7 @@ function addRow(network, netSize, colspan, note, notesWidth, color, operatingMod
     let rowCIDR = network + '/' + netSize
     let newRow =
         '            <tr id="' + rowId + '"' + styleTag + '  aria-label="' + rowCIDR + '">\n' +
-        '                <td data-subnet="' + rowCIDR + '" aria-labelledby="' + rowId + ' subnetHeader" class="row_address">' + rowCIDR + '</td>\n' +
+        '                <td data-subnet="' + rowCIDR + '" aria-labelledby="' + rowId + ' subnetHeader" class="row_address" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Subnet Mask: ' + cidr_to_mask(netSize) + '">' + rowCIDR + '</td>\n' +
         '                <td data-subnet="' + rowCIDR + '" aria-labelledby="' + rowId + ' rangeHeader" class="row_range">' + rangeCol + '</td>\n' +
         '                <td data-subnet="' + rowCIDR + '" aria-labelledby="' + rowId + ' useableHeader" class="row_usable">' + usableCol + '</td>\n' +
         '                <td data-subnet="' + rowCIDR + '" aria-labelledby="' + rowId + ' hostsHeader" class="row_hosts">' + hostCount + '</td>\n' +
@@ -324,6 +330,10 @@ function addRow(network, netSize, colspan, note, notesWidth, color, operatingMod
 
 
 // Helper Functions
+function cidr_to_mask(netSize) {
+    return int2ip(netSize === 0 ? 0 : (~(0xFFFFFFFF >>> netSize)) >>> 0);
+}
+
 function ip2int(ip) {
     return ip.split('.').reduce(function(ipInt, octet) { return (ipInt<<8) + parseInt(octet, 10)}, 0) >>> 0;
 }
