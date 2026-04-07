@@ -5,6 +5,25 @@ let infoColumnCount = 5  // Default without additional columns
 let additionalColumnsVisible = false;
 const FEEDBACK_DURATION_MS = 1000;  // Duration for UI feedback messages
 
+// handle passing params by #fragment 
+// to allows integration in Vite Vue app using a Vue router and iframe (IT Tools)
+const vscHash = window.location.hash ? window.location.hash.substring(1) : '';
+let vscUrlParams = vscHash.split('&').reduce(function (res, item) {
+    var parts = item.split('=');
+    res[parts[0]] = decodeURIComponent(parts[1]);
+    return res;
+}, {});
+if (!vscUrlParams.parent || !vscUrlParams.parent.startsWith(window.location.origin)) {
+    // only allows to pass parent and html if same origin (else could be a injection)
+    vscUrlParams = {};
+}
+const vscParentUrl = vscUrlParams.parent;
+const vscHtmlFileName = vscUrlParams.html || 'index.html';
+if (vscParentUrl) {
+    document.getElementById('tooltitle').style.display = 'none';
+    document.getElementById('toolinfo').style.width = '75%';
+}
+
 // Helper function to escape HTML to prevent XSS vulnerabilities
 function escapeHtml(text) {
     const map = {
@@ -286,7 +305,7 @@ $('#color_palette #reset_colors').on('click', function() {
 
 $('#bottom_nav #copy_url').on('click', function() {
     // TODO: Provide a warning here if the URL is longer than 2000 characters, probably using a modal.
-    let url = window.location.origin + getConfigUrl()
+    let url = getConfigUrl()
     navigator.clipboard.writeText(url);
     $('#bottom_nav #copy_url span').text('Copied!')
     // Swap the text back after 3sec
@@ -1208,16 +1227,16 @@ function updatePrintAttributes() {
     }
 
     // Set the current URL for printing
-    $('body').attr('data-print-url', window.location.href);
+    $('body').attr('data-print-url', getConfigUrl());
 
     // Add print footer element after the table if it doesn't exist
     if (!$('.print-footer').length) {
-        const safeUrl = escapeHtml(window.location.href);
+        const safeUrl = escapeHtml(getConfigUrl());
         const footerHtml = `<div class="print-footer">URL: ${safeUrl}</div>`;
         $('#calc').after(footerHtml);
     } else {
         // Update the footer content if it already exists
-        const safeUrl = escapeHtml(window.location.href);
+        const safeUrl = escapeHtml(getConfigUrl());
         $('.print-footer').html(`URL: ${safeUrl}`);
     }
 }
@@ -1907,7 +1926,7 @@ function getConfigUrl() {
     }
     renameKey(defaultExport, 'subnets', 's')
     //console.log(JSON.stringify(defaultExport))
-    return '/index.html?c=' + urlVersion + LZString.compressToEncodedURIComponent(JSON.stringify(defaultExport))
+    return (vscParentUrl || window.location.origin + '/' + vscHtmlFileName) + '?c=' + urlVersion + LZString.compressToEncodedURIComponent(JSON.stringify(defaultExport))
 }
 
 function updateBrowserHistory() {
@@ -1942,11 +1961,12 @@ function processConfigUrl() {
     const params = new Proxy(new URLSearchParams(window.location.search), {
         get: (searchParams, prop) => searchParams.get(prop),
     });
-    if (params['c'] !== null) {
+    const config = vscUrlParams.c || params['c'];
+    if (config !== null) {
         // First character is the version of the URL string, in case the mechanism of encoding changes
-        let urlVersion = params['c'].substring(0, 1)
-        let urlData = params['c'].substring(1)
-        let urlConfig = JSON.parse(LZString.decompressFromEncodedURIComponent(params['c'].substring(1)))
+        let urlVersion = config.substring(0, 1)
+        let urlData = config.substring(1)
+        let urlConfig = JSON.parse(LZString.decompressFromEncodedURIComponent(config.substring(1)))
         renameKey(urlConfig, 'v', 'config_version')
         if (urlConfig.hasOwnProperty('m')) {
             renameKey(urlConfig, 'm', 'operating_mode')
