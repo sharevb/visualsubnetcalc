@@ -18,7 +18,7 @@ if (!vscUrlParams.parent || !vscUrlParams.parent.startsWith(window.location.orig
     vscUrlParams = {};
 }
 const vscParentUrl = vscUrlParams.parent;
-const vscHtmlFileName = vscUrlParams.html || 'index.html';
+const vscHtmlFileName = vscUrlParams.html || window.location.pathname.replace(/^\/+/, '') || 'index.html';
 if (vscParentUrl) {
     document.getElementById('tooltitle').style.display = 'none';
     document.getElementById('toolinfo').style.width = '75%';
